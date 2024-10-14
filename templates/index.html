@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <style>
+        body {
+            max-width: 600px;
+            margin: auto;
+            padding: 2em;
+            background: #282c34;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1em;
+            color: #61dafb;
+        }
+
+        #chat-container {
+            background: #1e2125;
+            border-radius: 10px;
+            padding: 1em;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1em;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #in {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background: #61dafb;
+            color: #000;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .bot-message {
+            background: #4caf50;
+            color: #fff;
+            align-self: flex-start;
+            text-align: left;
+        }
+
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Chatbot</h1>
+<p><b>Olá, {{ user }}!</b></p>
+
+<div id="chat-container">
+    <div id="chat-box" class="chat-box"></div>
+</div>
+<input type="text" id="in" placeholder="Digite sua mensagem..." />
+
+<script>
+    function sse() {
+        var source = new EventSource("/stream");
+        var chatBox = document.getElementById("chat-box");
+        
+        source.onmessage = function (e) {
+            const message = document.createElement("div");
+            message.classList.add("message", "bot-message");
+            message.textContent = e.data;
+            chatBox.appendChild(message);
+            chatBox.scrollTop = chatBox.scrollHeight; //Rolagem automática
+        };
+    }
+
+    $("#in").keyup(function (e) {
+        if (e.keyCode == 13) {  
+            var message = $(this).val();
+            if (message.trim()) {
+                const userMessage = document.createElement("div");
+                userMessage.classList.add("message", "user-message");
+                userMessage.textContent = message;
+                //document.getElementById("chat-box").appendChild(userMessage);
+
+                $.post("/post", { message: message }).done(function(response) {
+                });
+
+                $(this).val(""); 
+            }
+        }
+    });
+
+    sse();
+</script>
+
+</body>
+</html>
